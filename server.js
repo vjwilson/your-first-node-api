@@ -31,6 +31,27 @@ let recipes = [
   }
 ];
 
+app.get('/recipes/:recipeId',function(req, res) {
+  const id = parseInt(req.params.recipeId, 10);
+
+  if (Number.isNaN(id) || id < 1) {
+    res.status(400);
+    res.json({ error: 'Bad ID' });
+  } else {
+    const result = recipes.find((recipe) => {
+      return recipe.id === id;
+    });
+
+    if (result) {
+      req.recipe = result;
+      res.json(result);
+    } else {
+      res.status(404);
+      res.json({ error: 'No recipe with that ID found '});
+    }
+  }
+});
+
 app.get('/recipes', function (req, res) {
   res.json(recipes);
 });
