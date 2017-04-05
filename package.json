@@ -1,0 +1,15 @@
+{
+  "name": "recipes-api",
+  "version": "0.1.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Van J. Wilson <van.wilson1992@alumni.unc.edu>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.15.2"
+  }
+}
