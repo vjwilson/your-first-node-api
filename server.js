@@ -1,6 +1,9 @@
 let express = require('express');
 let app = express();
 
+let bodyParser = require('body-parser');
+app.use( bodyParser.json() );
+
 let port = 7777;
 
 let recipes = [
@@ -30,6 +33,41 @@ let recipes = [
     "directions": "Mix all ingredients thoroughly. Pour into cake pan. Bake at 350 for 1 hour and 20 minutes."
   }
 ];
+
+let nextIndex = recipes.length + 1;
+
+app.post('/recipes', function (req, res) {
+  const recipe = Object.assign({}, req.body);
+
+  const requiredElements = [
+    'name',
+    'author',
+    'ingredients',
+    'directions'
+  ];
+  let validationMessages = [];
+  requiredElements.forEach((element) => {
+    if (!recipe[element] ||
+        !recipe[element].length) {
+      validationMessages.push(`The property '${element}' is required.`);
+    }
+  });
+
+  if (validationMessages.length) {
+    res.status(400);
+    res.json({
+      error: 'Field validation failure. See list for specific errors.',
+      messages: validationMessages
+    });
+  } else {
+    recipe.id = nextIndex;
+    recipes.push(recipe);
+    nextIndex += 1;
+
+    res.status(201);
+    res.json(recipe);
+  }
+});
 
 app.get('/recipes/:recipeId',function(req, res) {
   const id = parseInt(req.params.recipeId, 10);
