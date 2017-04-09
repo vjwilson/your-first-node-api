@@ -115,6 +115,29 @@ app.put('/recipes/:recipeId',function(req, res) {
   }
 });
 
+app.delete('/recipes/:recipeId',function(req, res) {
+  const id = parseInt(req.params.recipeId, 10);
+
+  if (Number.isNaN(id) || id < 1) {
+    res.status(400);
+    res.json({ error: 'Bad ID' });
+  } else {
+    const startingLength = recipes.length;
+
+    recipes = recipes.filter((recipe) => {
+      return recipe.id !== id;
+    });
+
+    if (recipes.length < startingLength) {
+      res.status(204);
+      res.send();
+    } else {
+      res.status(404);
+      res.json({ error: 'No recipe with that ID found '});
+    }
+  }
+});
+
 app.get('/recipes/:recipeId',function(req, res) {
   const id = parseInt(req.params.recipeId, 10);
 
