@@ -69,6 +69,52 @@ app.post('/recipes', function (req, res) {
   }
 });
 
+app.put('/recipes/:recipeId',function(req, res) {
+  const id = parseInt(req.params.recipeId, 10);
+  const recipe = Object.assign({}, req.body);
+
+  let validationMessages = [];
+
+  if (Number.isNaN(id) || id < 1) {
+    validationMessages.push('Bad ID');
+  }
+
+  const requiredElements = [
+    'name',
+    'author',
+    'ingredients',
+    'directions'
+  ];
+  requiredElements.forEach((element) => {
+    if (!recipe[element] ||
+        !recipe[element].length) {
+      validationMessages.push(`The property '${element}' is required.`);
+    }
+  });
+
+  if (validationMessages.length) {
+    res.status(400);
+    res.json({
+      error: 'Bad request. See list for specific errors.',
+      messages: validationMessages
+    });
+  } else {
+    const result = recipes.find((recipe) => {
+      return recipe.id === id;
+    });
+
+    if (result) {
+      delete recipe.id;
+
+      Object.assign(result, recipe);
+      res.json(result);
+    } else {
+      res.status(404);
+      res.json({ error: 'No recipe with that ID found '});
+    }
+  }
+});
+
 app.get('/recipes/:recipeId',function(req, res) {
   const id = parseInt(req.params.recipeId, 10);
 
