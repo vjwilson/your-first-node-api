@@ -39,19 +39,7 @@ let nextIndex = recipes.length + 1;
 app.post('/recipes', function (req, res) {
   const recipe = Object.assign({}, req.body);
 
-  const requiredElements = [
-    'name',
-    'author',
-    'ingredients',
-    'directions'
-  ];
-  let validationMessages = [];
-  requiredElements.forEach((element) => {
-    if (!recipe[element] ||
-        !recipe[element].length) {
-      validationMessages.push(`The property '${element}' is required.`);
-    }
-  });
+  let validationMessages = validateRecipe(recipe);
 
   if (validationMessages.length) {
     res.status(400);
@@ -70,27 +58,14 @@ app.post('/recipes', function (req, res) {
 });
 
 app.put('/recipes/:recipeId',function(req, res) {
-  const id = parseInt(req.params.recipeId, 10);
+  const id = getRecipeIdFromUrl(req);
   const recipe = Object.assign({}, req.body);
 
-  let validationMessages = [];
+  let validationMessages = validateRecipe(recipe);
 
-  if (Number.isNaN(id) || id < 1) {
-    validationMessages.push('Bad ID');
+  if (!id) {
+    validationMessages = ['Bad ID', ...validationMessages];
   }
-
-  const requiredElements = [
-    'name',
-    'author',
-    'ingredients',
-    'directions'
-  ];
-  requiredElements.forEach((element) => {
-    if (!recipe[element] ||
-        !recipe[element].length) {
-      validationMessages.push(`The property '${element}' is required.`);
-    }
-  });
 
   if (validationMessages.length) {
     res.status(400);
@@ -116,9 +91,9 @@ app.put('/recipes/:recipeId',function(req, res) {
 });
 
 app.delete('/recipes/:recipeId',function(req, res) {
-  const id = parseInt(req.params.recipeId, 10);
+  const id = getRecipeIdFromUrl(req);
 
-  if (Number.isNaN(id) || id < 1) {
+  if (!id) {
     res.status(400);
     res.json({ error: 'Bad ID' });
   } else {
@@ -139,9 +114,9 @@ app.delete('/recipes/:recipeId',function(req, res) {
 });
 
 app.get('/recipes/:recipeId',function(req, res) {
-  const id = parseInt(req.params.recipeId, 10);
+  const id = getRecipeIdFromUrl(req);
 
-  if (Number.isNaN(id) || id < 1) {
+  if (!id) {
     res.status(400);
     res.json({ error: 'Bad ID' });
   } else {
@@ -170,3 +145,43 @@ app.get('/', function (req, res) {
 app.listen(port, function () {
   console.log(`Recipe API app listening on port ${port}`);
 });
+
+/**
+ * get recipe ID from request object
+ * @param  {Object} req Express request Object
+ * @return {number}     positve integer, or 0 if invalid
+ */
+function getRecipeIdFromUrl(req) {
+  const id = parseInt(req.params.recipeId, 10);
+
+  if (Number.isNaN(id) || id < 1) {
+    return 0;
+  } else {
+    return id;
+  }
+}
+
+/**
+ * check a recipe for approriate fields
+ * @param  {Object} recipe the recipe to valide
+ * @return {Array}         an array of validation error strings (empty array if no errors)
+ */
+function validateRecipe(recipe) {
+  const requiredElements = [
+    'name',
+    'author',
+    'ingredients',
+    'directions'
+  ];
+  let validationMessages = [];
+
+  requiredElements.forEach((element) => {
+    if (!recipe[element] ||
+        !recipe[element].length) {
+      validationMessages.push(`The property '${element}' is required.`);
+    }
+  });
+
+  return validationMessages;
+}
+
