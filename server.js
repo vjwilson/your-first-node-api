@@ -36,107 +36,106 @@ let recipes = [
 
 let nextIndex = recipes.length + 1;
 
-app.post('/recipes', function (req, res) {
-  const recipe = Object.assign({}, req.body);
+app.route('/recipes/:recipeId')
+  .put(function(req, res) {
+    const id = getRecipeIdFromUrl(req);
+    const recipe = Object.assign({}, req.body);
 
-  let validationMessages = validateRecipe(recipe);
+    let validationMessages = validateRecipe(recipe);
 
-  if (validationMessages.length) {
-    res.status(400);
-    res.json({
-      error: 'Field validation failure. See list for specific errors.',
-      messages: validationMessages
-    });
-  } else {
-    recipe.id = nextIndex;
-    recipes.push(recipe);
-    nextIndex += 1;
-
-    res.status(201);
-    res.json(recipe);
-  }
-});
-
-app.put('/recipes/:recipeId',function(req, res) {
-  const id = getRecipeIdFromUrl(req);
-  const recipe = Object.assign({}, req.body);
-
-  let validationMessages = validateRecipe(recipe);
-
-  if (!id) {
-    validationMessages = ['Bad ID', ...validationMessages];
-  }
-
-  if (validationMessages.length) {
-    res.status(400);
-    res.json({
-      error: 'Bad request. See list for specific errors.',
-      messages: validationMessages
-    });
-  } else {
-    const result = recipes.find((recipe) => {
-      return recipe.id === id;
-    });
-
-    if (result) {
-      delete recipe.id;
-
-      Object.assign(result, recipe);
-      res.json(result);
-    } else {
-      res.status(404);
-      res.json({ error: 'No recipe with that ID found '});
+    if (!id) {
+      validationMessages = ['Bad ID', ...validationMessages];
     }
-  }
-});
 
-app.delete('/recipes/:recipeId',function(req, res) {
-  const id = getRecipeIdFromUrl(req);
-
-  if (!id) {
-    res.status(400);
-    res.json({ error: 'Bad ID' });
-  } else {
-    const startingLength = recipes.length;
-
-    recipes = recipes.filter((recipe) => {
-      return recipe.id !== id;
-    });
-
-    if (recipes.length < startingLength) {
-      res.status(204);
-      res.send();
+    if (validationMessages.length) {
+      res.status(400);
+      res.json({
+        error: 'Bad request. See list for specific errors.',
+        messages: validationMessages
+      });
     } else {
-      res.status(404);
-      res.json({ error: 'No recipe with that ID found '});
+      const result = recipes.find((recipe) => {
+        return recipe.id === id;
+      });
+
+      if (result) {
+        delete recipe.id;
+
+        Object.assign(result, recipe);
+        res.json(result);
+      } else {
+        res.status(404);
+        res.json({ error: 'No recipe with that ID found '});
+      }
     }
-  }
-});
+  })
+  .delete(function(req, res) {
+    const id = getRecipeIdFromUrl(req);
 
-app.get('/recipes/:recipeId',function(req, res) {
-  const id = getRecipeIdFromUrl(req);
-
-  if (!id) {
-    res.status(400);
-    res.json({ error: 'Bad ID' });
-  } else {
-    const result = recipes.find((recipe) => {
-      return recipe.id === id;
-    });
-
-    if (result) {
-      req.recipe = result;
-      res.json(result);
+    if (!id) {
+      res.status(400);
+      res.json({ error: 'Bad ID' });
     } else {
-      res.status(404);
-      res.json({ error: 'No recipe with that ID found '});
-    }
-  }
-});
+      const startingLength = recipes.length;
 
-app.get('/recipes', function (req, res) {
-  res.json(recipes);
-});
+      recipes = recipes.filter((recipe) => {
+        return recipe.id !== id;
+      });
+
+      if (recipes.length < startingLength) {
+        res.status(204);
+        res.send();
+      } else {
+        res.status(404);
+        res.json({ error: 'No recipe with that ID found '});
+      }
+    }
+  })
+  .get(function(req, res) {
+    const id = getRecipeIdFromUrl(req);
+
+    if (!id) {
+      res.status(400);
+      res.json({ error: 'Bad ID' });
+    } else {
+      const result = recipes.find((recipe) => {
+        return recipe.id === id;
+      });
+
+      if (result) {
+        req.recipe = result;
+        res.json(result);
+      } else {
+        res.status(404);
+        res.json({ error: 'No recipe with that ID found '});
+      }
+    }
+  });
+
+app.route('/recipes')
+  .post(function (req, res) {
+      const recipe = Object.assign({}, req.body);
+
+      let validationMessages = validateRecipe(recipe);
+
+      if (validationMessages.length) {
+        res.status(400);
+        res.json({
+          error: 'Field validation failure. See list for specific errors.',
+          messages: validationMessages
+        });
+      } else {
+        recipe.id = nextIndex;
+        recipes.push(recipe);
+        nextIndex += 1;
+
+        res.status(201);
+        res.json(recipe);
+      }
+    })
+  .get(function (req, res) {
+    res.json(recipes);
+  });
 
 app.get('/', function (req, res) {
   res.send('Welcome to the recipe API.');
